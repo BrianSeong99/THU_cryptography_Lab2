@@ -166,9 +166,10 @@ bool CDES::EnCode() {
 	int mode; //工作模式 ECB or CBC
 
 	//读入明文并打印
-	cout << "\nEnter the path of the plaintext file" << endl;
-	cout << "> ";
-	cin >> filepath;
+	// cout << "\nEnter the path of the plaintext file" << endl;
+	// cout << "> ";
+	// cin >> filepath;
+	filepath = "../Data/plaintext.txt";
 	ifstream msgFile(filepath);
 	if (!msgFile.is_open()) {
 		cout << "Can not open the file!" << endl;
@@ -179,9 +180,10 @@ bool CDES::EnCode() {
 	msgFile.close();
 
 	//读入密钥并打印
-	cout << "\nEnter the path of the key file" << endl;
-	cout << "> ";
-	cin >> filepath;
+	// cout << "\nEnter the path of the key file" << endl;
+	// cout << "> ";
+	// cin >> filepath;
+	filepath = "../Data/key.txt";
 	ifstream keyFile(filepath);
 	if (!keyFile.is_open()) {
 		cout << "Can not open the file!" << endl;
@@ -193,9 +195,10 @@ bool CDES::EnCode() {
 	keyFile.close();
 
 	/*加密模式*/
-	cout << "\nEnter encryption mode: [0]ECB, [1]CBC" << endl;
-	cout << "> ";
-	cin >> mode;
+	// cout << "\nEnter encryption mode: [0]ECB, [1]CBC" << endl;
+	// cout << "> ";
+	// cin >> mode;
+	mode = 1;
 	while (mode != 0 && mode != 1) {
 		cout << "Invalid input! Please re-enter!" << endl;
 		cout << ">";
@@ -204,9 +207,10 @@ bool CDES::EnCode() {
 
 	if (mode == CBC) {
 		//读入IV并打印
-		cout << "\nEnter the path of the IV file" << endl;
-		cout << "> ";
-		cin >> filepath;
+		// cout << "\nEnter the path of the IV file" << endl;
+		// cout << "> ";
+		// cin >> filepath;
+		filepath = "../Data/iv.txt";
 		ifstream IVFile(filepath);
 		if (!IVFile.is_open()) {
 			cout << "Can not open the file!" << endl;
@@ -224,9 +228,10 @@ bool CDES::EnCode() {
 	string restr = StrToHex((char*)buff, strlen((char*)buff));
 	cout << "Cipher: " << restr << endl;
 
-	cout << "\nEnter the file path to save ciphertext" << endl;
-	cout << "> ";
-	cin >> filepath;
+	// cout << "\nEnter the file path to save ciphertext" << endl;
+	// cout << "> ";
+	// cin >> filepath;
+	filepath = "../Data/ciphertext.txt";
 	ofstream cipherFile(filepath);
 	if (!cin || !cipherFile.is_open())
 		return false;
@@ -422,7 +427,8 @@ bool CDES::RunDES(bool bType, bool bMode, int PaddingMode, const unsigned char* 
 	if (!(outbuf && Key && keylen >= 8)) // 空字符串加密的时候In和datalen都为0,应该去掉此判断
 		return false;
 
-	unsigned char* inbuf = new unsigned char[datalen + 8]{ 0 };
+	unsigned char* inbuf = new unsigned char[datalen + 8];
+	memset(inbuf, 0, datalen+8);
 	memcpy(inbuf, In, datalen);
 	unsigned padlen = datalen;
 
@@ -550,6 +556,7 @@ void CDES::SetSubKey(PSubKey pSubKey, const unsigned char Key[8]) {
 		RotateL(KL, 28, LOOP_Table[i]);
 		RotateL(KR, 28, LOOP_Table[i]);
 		Transform((*pSubKey)[i], K, PC2_Table, 48);
+		cout << i << " " << (*pSubKey)[i] << endl;
 	}
 }
 
