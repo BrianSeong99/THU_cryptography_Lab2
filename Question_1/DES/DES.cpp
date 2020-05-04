@@ -176,7 +176,7 @@ bool CDES::EnCode() {
 		return false;
 	}
 	getline(msgFile, msg);
-	cout << "Message: " << msg << endl;
+	// cout << "Message: " << msg << endl;
 	msgFile.close();
 
 	//读入密钥并打印
@@ -191,7 +191,7 @@ bool CDES::EnCode() {
 	}
 	keyFile >> sKey;
 	cout << "Key: " << sKey << endl;
-	sKey = HexToStr(sKey);
+	// sKey = HexToStr(sKey);
 	keyFile.close();
 
 	/*加密模式*/
@@ -217,12 +217,13 @@ bool CDES::EnCode() {
 			return false;
 		}
 		IVFile >> IV;
-		cout << "IV: " << IV << endl;
+		// cout << "IV: " << IV << endl;
 		/////////////ATTENTION
 		IV = HexToStr(IV);
 		IVFile.close();
 	}
 
+	cout << sKey << " " << sKey.c_str() << endl;
 	unsigned char buff[1024] = { 0 };
 	CDES::RunDES(CDES::ENCRYPT, mode, CDES::PAD_ISO_1, (const unsigned char*)IV.c_str(), (const unsigned char*)msg.c_str(), buff, strlen(msg.c_str()), (const unsigned char*)sKey.c_str(), strlen(sKey.c_str()));
 	string restr = StrToHex((char*)buff, strlen((char*)buff));
@@ -556,7 +557,7 @@ void CDES::SetSubKey(PSubKey pSubKey, const unsigned char Key[8]) {
 		RotateL(KL, 28, LOOP_Table[i]);
 		RotateL(KR, 28, LOOP_Table[i]);
 		Transform((*pSubKey)[i], K, PC2_Table, 48);
-		cout << i << " " << (*pSubKey)[i] << endl;
+		// cout << i << " " << *(*pSubKey)[i] << endl;
 	}
 }
 

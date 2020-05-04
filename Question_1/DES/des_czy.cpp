@@ -74,7 +74,6 @@ void setDESKeys(const unsigned char key[8]) {
     Utils::SLL(bitKeyLeft, 28, LoopTable[i]);
     Utils::SLL(bitKeyRight, 28, LoopTable[i]);
     Utils::permutationTransform(keys[i], bitKey, PC2Table, 48); // TODO check if keys have been updated
-    cout << i << " " << keys[i] << endl;
   }
 }
 
@@ -104,8 +103,6 @@ int main() {
   unsigned char* rawKey = new unsigned char[keyLen];
   memcpy(rawKey, (unsigned char*)key.c_str(), keyLen);
   setDESKeys(rawKey);
-  cout << key << endl;
-  cout << keys << endl;
 
   // get iv (Initial Vector)
   ifstream ivFile("../Data/iv.txt");
