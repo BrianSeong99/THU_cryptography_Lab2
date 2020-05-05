@@ -3,6 +3,7 @@
 unsigned char* inBuff;
 unsigned char* outBuff;
 bool keys[16][48];
+int SELECTION;
 
 class Utils {
 public:
@@ -77,20 +78,65 @@ void setDESKeys(const unsigned char key[8]) {
   }
 }
 
-void encode(unsigned char* iv) {
-  unsigned char* tempBuff = inBuff;
+void DES(unsigned char Out[8], const unsigned char In[8]) {
+	bool M[64], tmp[32], *Li = &M[0], *Ri = &M[32];
+	Utils::byteToBit(M, In, 64);
+	Utils::permutationTransform(M, M, IPTable, 64);
+	if (SELECTION == ENCRYPT) {
+		for (int i = 0; i < 16; ++i) {
+			memcpy(tmp, Ri, 32);        //Ri[i-1] 保存
+			Utils::fFunction(Ri, keys[i]);  //Ri[i-1]经过转化和SBox输出为P
+			Utils::XOR(Ri, Li, 32);            //Ri[i] = P XOR Li[i-1]
+			memcpy(Li, tmp, 32);        //Li[i] = Ri[i-1]
+		}
+	}
+	else {
+		for (int i = 15; i >= 0; --i) {
+			memcpy(tmp, Ri, 32);        //Ri[i-1] 保存
+			Utils::fFunction(Ri, keys[i]);  //Ri[i-1]经过转化和SBox输出为P
+			Utils::XOR(Ri, Li, 32);                   //Ri[i] = P XOR Li[i-1]
+			memcpy(Li, tmp, 32);       //Li[i] = Ri[i-1]
+		}
+	}
+	Utils::SLL(M, 64, 32);                   //Ri与Li换位重组M
+	Utils::permutationTransform(M, M, IPInverseTable, 64);     //最后结果进行转化
+	Utils::bitToByte(Out, M, 64);              //组织成字符
 }
 
-void decode() {
+void run(unsigned char* iv, unsigned padlen) {
+  unsigned char   cvec[8] = ""; // 扭转向量
+	unsigned char   cvin[8] = ""; // 中间变量
+  memcpy(cvec, iv, 8);
 
+  for (int i = 0, j = padlen >> 3; i < j; ++i, outBuff += 8, inBuff += 8) {
+    if (SELECTION == ENCRYPT) {
+      for (int j = 0; j < 8; ++j)     //将输入与扭转变量异或
+        cvin[j] = inBuff[j] ^ cvec[j];
+    }
+    else {
+      memcpy(cvin, inBuff, 8);
+    }
+
+    DES(outBuff, cvin);
+    if (SELECTION == ENCRYPT) {
+      memcpy(cvec, outBuff, 8);         //将输出设定为扭转变量
+    }
+    else {
+      for (int j = 0; j < 8; ++j)           //将输出与扭转变量异或 
+        outBuff[j] = outBuff[j] ^ cvec[j];
+      memcpy(cvec, cvin, 8);                //将输入设定为扭转变量
+    }
+  }
+
+  cout << "COMPLETE" << endl;
 }
 
 int main() {
-  int selection;
   string key;
   string iv;
   string text;
   string srcPath;
+  string dstPath;
 
   // get key && initialize key variable && generate DES keys
   ifstream keyFile("../Data/key.txt");
@@ -111,21 +157,24 @@ int main() {
     return 0;
   }
   getline(ivFile, iv);
+  int ivLen = strlen(iv.c_str());
+  unsigned char* rawIV = new unsigned char[ivLen];
+  memcpy(rawIV, (unsigned char*)iv.c_str(), ivLen);
 
-  // get selection for operation
+  // get SELECTION for operation
   cout << "SELECT '1' for Encrypt; '2' for Decrypt" << endl << "> ";
-  cin >> selection;
+  cin >> SELECTION;
   cout << endl;
 
   // encrypt
-  if (selection == 1) srcPath = "../Data/plaintext.txt";
+  if (SELECTION == 1) srcPath = "../Data/plaintext.txt";
   // decrypt
   else srcPath = "../Data/ciphertext.txt";
 
   // Read Plaintext Content && set inBuff
   ifstream textFile(srcPath);
   if (!textFile.is_open()) {
-    cout << "can't open text file" << endl;
+    cout << "can't open src file" << endl;
     return 0;
   }
   getline(textFile, text);
@@ -137,5 +186,22 @@ int main() {
   // Initialize outBuff
   outBuff = new unsigned char[16010];
   memset(outBuff, 0x00, strlen((const char*)outBuff));
+
+  // run DES algorithm
+  run(rawIV, dataLen);
+
+  dstPath = "../Data/ciphertext.txt";
+	ofstream cipherFile(dstPath);
+	if (!cin || !cipherFile.is_open()) {
+    cout << "can't open dst file" << endl;
+    return 0;
+  }
+
+  for (int i = 0; i < strlen((char*)outBuff); i++) {
+    cipherFile << outBuff[i];
+    cout << outBuff[i];
+  }
+	cout << "Write successfully!" << endl;
+	cipherFile.close();
   return 0;
 }

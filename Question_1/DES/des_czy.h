@@ -3,6 +3,10 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+
+#define ENCRYPT 1
+#define DECRYPT 2
+
 using namespace std;
 
 const char IPTable[64] = {
