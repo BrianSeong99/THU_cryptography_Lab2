@@ -185,8 +185,9 @@ int main() {
 
   // Initialize outBuff
   outBuff = new unsigned char[16010];
-  memset(outBuff, 0x00, strlen((const char*)outBuff));
+  memset(outBuff, 0x00, 16010);
 
+  cout << outBuff << endl;
   // run DES algorithm
   run(rawIV, dataLen);
 
@@ -197,10 +198,15 @@ int main() {
     return 0;
   }
 
-  for (int i = 0; i < strlen((char*)outBuff); i++) {
-    cipherFile << outBuff[i];
-    cout << outBuff[i];
-  }
+  cout << "length of output: " << strlen((char*)outBuff) << endl;
+
+  // for (int i = 0; i < strlen((char*)outBuff); i++) {
+  string str(reinterpret_cast<char*>(outBuff));
+
+  cipherFile << outBuff;
+  cout << "output" << outBuff << endl;;
+    // cout << outBuff[i];
+  // }
 	cout << "Write successfully!" << endl;
 	cipherFile.close();
   return 0;

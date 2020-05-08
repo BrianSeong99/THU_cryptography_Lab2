@@ -421,6 +421,7 @@ static void F_func(bool In[32], const bool Ki[48]) {
 bool CDES::RunDES(bool bType, bool bMode, int PaddingMode, const unsigned char* Iv, const unsigned char* In,
 	unsigned char* Out, unsigned datalen, const unsigned char* Key, unsigned keylen)
 {
+	cout << "RunDES out length: " << strlen((const char*)Out) << endl;
 	memset(Out, 0x00, strlen((const char*)Out));
 	unsigned char* outbuf = Out;
 
