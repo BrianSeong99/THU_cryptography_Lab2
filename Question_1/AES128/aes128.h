@@ -1,8 +1,11 @@
 #ifndef AES128_H
 #define AES128_H
 
+#include <string>
+#include <cstring>
 #include <iostream>
 #include <string.h>
+#include <stdio.h>
 #include <fstream>
 
 typedef unsigned char u_8;

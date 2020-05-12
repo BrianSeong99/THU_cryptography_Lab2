@@ -1,14 +1,14 @@
 #include "aes128.h"
 using namespace std;
 
-unsigned char plaintext[2048];
-unsigned char ciphertext[2048];
+unsigned char plaintext[4096];
+unsigned char ciphertext[4096];
 unsigned char State[4][4]; 
-int blockSize = 4;
 int keySize = 4;
-int rounds = 10;
 unsigned char key[32]; 
-unsigned char W[16*15];
+unsigned char W[16*11];
+unsigned char iv[16] = "012345678910111";
+
 
 unsigned char GF(char multiNum, unsigned char bit) {
   switch(multiNum) {
@@ -74,9 +74,9 @@ void SubBytes() {
 
 void InvSubBytes() {
   int i,j; 
-  for(j=0;j<4;j++) {
-    for(i=0;i<4;i++) { 
-      State[i][j]=InverseSbox[State[i][j]];
+  for(j = 0; j < 4; j ++) {
+    for(i = 0; i < 4; i ++) { 
+      State[i][j] = InverseSbox[State[i][j]];
     } 
   }
 } 
@@ -86,14 +86,18 @@ void ShiftRows() {
   int i,j; 
   for(j=0;j<4;j++) {
     for(i=0;i<4;i++) {
-      temp[4*i+j]=State[i][j]; 
+      temp[4*i+j] = State[i][j]; 
     } 
   } 
-  for(i=1;i<4;i++) { 
-    for(j=0;j<4;j++) { 
-      if(i==1)State[i][j]=temp[4*i+(j+1)%4];
-      else if(i==2)State[i][j]=temp[4*i+(j+2)%4];
-      else if(i==3)State[i][j]=temp[4*i+(j+3)%4];
+  for (i=1; i<4; i++) { 
+    for (j=0; j<4; j++) { 
+      if (i == 1) {
+        State[i][j] = temp[4*i+(j+1)%4];
+      } else if (i == 2) {
+        State[i][j] = temp[4*i+(j+2)%4];
+      } else if (i == 3) {
+        State[i][j] = temp[4*i+(j+3)%4];
+      }
     } 
   }
 } 
@@ -101,16 +105,20 @@ void ShiftRows() {
 void InvShiftRows() {
   unsigned char temp[4*4]; 
   int i,j; 
-  for(j=0;j<4;j++) {
-    for(i=0;i<4;i++) {
-      temp[4*i+j]=State[i][j]; 
+  for(j = 0; j < 4; j ++) {
+    for(i = 0; i < 4; i ++) {
+      temp[4*i+j] = State[i][j]; 
     } 
   } 
-  for(i=1;i<4;i++) {
-    for(j=0;j<4;j++) {
-      if (i == 1) State[i][j] = temp[4*i+(j+3)%4];
-      else if(i==2) State[i][j] = temp[4*i+(j+2)%4];
-      else if(i==3) State[i][j] = temp[4*i+(j+1)%4];
+  for (i = 1; i < 4; i ++) {
+    for (j = 0; j < 4; j ++) {
+      if (i == 1) {
+        State[i][j] = temp[4*i+(j+3)%4];
+      } else if (i == 2) {
+        State[i][j] = temp[4*i+(j+2)%4];
+      } else if (i == 3) {
+        State[i][j] = temp[4*i+(j+1)%4];
+      }
     } 
   } 
 } 
@@ -183,7 +191,7 @@ void InvMixColumns() {
       (int)GF('b', temp[j]) 
       ^ (int)GF('d', temp[4+j])
       ^ (int)GF('9', temp[4*2+j])
-      ^ (int)GF('3', temp[4*3+j])
+      ^ (int)GF('e', temp[4*3+j])
     ); 
   }
 } 
@@ -208,14 +216,14 @@ unsigned char* SUBWORD(unsigned char* word) {
 // reference from ppt Lecture5 pg23
 void generateKey(unsigned char* inputKey) {
   memcpy(key, inputKey, 16);
-  memset(W,0,16*15); 
+  memset(W,0,16*11); 
   u_8* temp = new u_8[4]; 
   for (int row = 0; row < keySize; row ++) {
     for (int i = 0; i < 4; i ++) {
       W[4*row+i] =  key[4*row+i]; 
     }
   }
-  for (int row = keySize; row < 4*(rounds+1); row ++) {
+  for (int row = keySize; row < 4*(10+1); row ++) {
     for (int i = 0; i < 4; i ++) {
       temp[i] = W[4*row-(4-i)];
     }
@@ -236,38 +244,33 @@ void generateKey(unsigned char* inputKey) {
 
 void encrypt() {
   int textLength = strlen((char*)plaintext);
-  int k = textLength % 16;
-  int n = (textLength - 1) / 16 + 1;
+  int n = textLength / 16;
   unsigned char input[16];
-  unsigned char output[16] = {0};
+  unsigned char output[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   // CBC setup
   for (int l = 0; l < n; l ++) {
-    if (l == n-1 && k != 0) {
-      for (int i = 0; i < k; i ++) {
-        input[i] = plaintext[i+16*l];
-      }
-      for (int i=k; i<16; i++) {
-        input[i] = ' ';
-      }
-    }
-    else {
-      for (int i=0; i<16; i++) {
-        input[i] = plaintext[i+16*l];
-      }
-    }
     for (int i=0; i<16; i++) {
-      input[i] = input[i] ^ output[i]; // CBC
+      input[i] = plaintext[i+16*l];
     }
+    if (l == 0) {
+			for (int i = 0; i < 16; i ++) {
+				input[i] = input[i] ^ iv[i];
+			}
+		} else {
+			for (int i = 0; i < 16; i ++) {
+				input[i] = input[i] ^ output[i];
+			}
+		}
 
     // AES encrypt
     memset(&State[0][0], 0, 16); 
-    for(int i = 0; i < 4*blockSize; i ++) {
+    for(int i = 0; i < 16; i ++) {
       State[i%4][i/4]=input[i];
     } 
     AddRoundKey(0);
      
-    for (int round = 1; round < rounds; round ++) {
+    for (int round = 1; round < 10; round ++) {
       SubBytes();
       ShiftRows();
       MixColumns();
@@ -276,18 +279,81 @@ void encrypt() {
      
     SubBytes();
     ShiftRows();
-    AddRoundKey(rounds);
+    AddRoundKey(10);
      
     // output = state 
-    for (int i = 0; i < (4 * blockSize); i++) {
+    for (int i = 0; i < 16; i++) {
       output[i] = State[i % 4][ i / 4];
     } 
 
     // storing ciphertext
-    for (int i=0; i<16; i++) {
+    for (int i = 0; i < 16; i ++) {
       ciphertext[i+16*l] = output[i];
     }
   }
+}
+
+void decrypt() {
+  int textLength = strlen((char*)ciphertext);
+  int n = textLength / 16;
+  unsigned char input[16];
+  unsigned char output[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  // CBC setup
+  for (int i = 0; i < 16; i ++) {
+    input[i] = ciphertext[i+16*(n-1)];
+  }
+
+  for (int l = n-1; l >= 0; l --) {
+    // AES encrypt
+    memset(&State[0][0], 0, 16); 
+    for(int i = 0; i < 16; i ++) {
+      State[i%4][i/4]=input[i];
+    } 
+    AddRoundKey(10);
+     
+    for (int round = 1; round < 10; round ++) {
+      InvShiftRows();
+      InvSubBytes();
+      AddRoundKey(10-round);
+      InvMixColumns();
+    }
+    
+    InvShiftRows();
+    InvSubBytes();
+    AddRoundKey(0);
+     
+    // output = state 
+    for (int i = 0; i < 16; i++) {
+      output[i] = State[i % 4][i / 4];
+    }
+
+    if (l == 0) {
+			for (int i = 0; i < 16; i ++) {
+				output[i] = output[i] ^ iv[i];
+			}
+		} else {
+			for (int i = 0; i < 16; i ++) {
+				input[i] = ciphertext[i+16*(l-1)];
+				output[i] = input[i] ^ output[i];
+			}
+		}
+
+    // storing ciphertext
+    for (int i = 0; i < 16; i ++) {
+      plaintext[i+16*l] = output[i];
+    }
+  }
+}
+
+bool judge(unsigned char text1[], unsigned char text2[], int size) {
+	for (int i = size; i >= 0; i --) {
+		if (text1[i] != text2[i]) {
+			cout << "error at: " << i << endl;
+			return false;
+		}
+	}
+	return true;
 }
 
 int main() {
@@ -296,20 +362,44 @@ int main() {
   memcpy(key, inputKey, 16);
   generateKey(inputKey);
 
-  // set plaintext
-  for (int i = 0; i < 2048; i ++) {
-    plaintext[i] = 'a';
-  }
+  memset(plaintext, 0, 4096);
+  memset(ciphertext, 0, 4096);
 
-  encrypt();
-  
-  ofstream fout("2AES_CBC_128.txt");
-  for (int i=0;i<strlen((char*)plaintext);i++) {
-    fout<<hex<<((int)(ciphertext[i]>>4)&0x0f)<<((int)ciphertext[i]&0x0f);
+  string srcPath = "../Data/plaintext.txt";
+	string dstPath = "../Data/ciphertext.txt";
+	string text = "";
+
+  // Read Plaintext Content && set inBuff
+  ifstream textFile(srcPath);
+  if (!textFile.is_open()) {
+    cout << "can't open src file" << endl;
+    return 0;
   }
-  fout<<endl;
-  fout.close();
-  cout << "done" << endl;
+  getline(textFile, text);
+	strcpy((char*)plaintext, text.c_str());
+
+	clock_t encryptBegin = clock();	
+	encrypt();
+	clock_t encryptEnd = clock();
+
+	clock_t decryptBegin = clock();
+	decrypt();
+	clock_t decryptEnd = clock();
+
+	unsigned char tmp[4096];
+	strcpy((char*)tmp, text.c_str());
+	if(judge(tmp, plaintext, 2048)) {
+		double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
+  	cout << "ENCRYPT duration: " << duration << endl;
+  	cout << "ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+
+		duration = double(decryptEnd - decryptBegin) / CLOCKS_PER_SEC;
+		cout << "DECRYPT duration: " << duration << endl;
+  	cout << "DECRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+
+	} else {
+		cout << "encryption and decryption error" << endl;
+	}
   
   return 0;                           
 }

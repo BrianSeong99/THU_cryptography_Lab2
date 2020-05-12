@@ -37,6 +37,7 @@ void encrypt() {
 			}
 		}
 
+		// DES encrypt
 		static bool M[64], Tmp[32], *Li = &M[0], *Ri = &M[32];
 		ByteToBit(M, input, 64); 
 		Transform(M, M, IP_Table, 64);
