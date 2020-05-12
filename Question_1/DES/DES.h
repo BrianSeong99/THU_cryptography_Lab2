@@ -1,6 +1,7 @@
 #ifndef DESH
 #define DESH
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <string.h>
 #include <stdio.h>
@@ -124,16 +125,16 @@ void ByteToBit(bool *Out, const char *In, int bits) {
 	}
 }
 
-void TransferToBit(bool *Out, const char *In, int bits) {
-	for(int i = 0; i < bits; i++) {
-		Out[bits-1-i] = (In[i/8] >> (i%8)) & 0x1;
-	}
-}
- 
 void BitToByte(char *Out, const bool *In, int bits){
 	memset(Out, 0, (bits+7)/8);
 	for(int i = 0; i < bits; i++) {
 		Out[i/8] |= In[i] << (7-i%8);
+	}
+}
+
+void TransferToBit(bool *Out, const char *In, int bits) {
+	for(int i = 0; i < bits; i++) {
+		Out[bits-1-i] = (In[i/8] >> (i%8)) & 0x1;
 	}
 }
 

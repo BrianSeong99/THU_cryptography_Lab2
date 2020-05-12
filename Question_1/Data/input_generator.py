@@ -1,7 +1,7 @@
 from string import ascii_letters, punctuation, digits
 from random import choice
 
-string_format = ascii_letters + punctuation + digits
+string_format = digits # ascii_letters + punctuation + digits
 plaintext = "".join(choice(string_format) for x in range(2048))
 key = "".join(choice(string_format) for x in range(56))
 iv = "".join(choice(string_format) for x in range(64))
