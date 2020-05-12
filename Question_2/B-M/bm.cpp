@@ -11,8 +11,12 @@ int main() {
   cin >> N;
   srand(1);
   a = new unsigned int[N];
-  for (int i=0; i<N; i++) {
-    a[i] = rand() % 2 ? 0 : 1;
+  long long num = 0;
+  cout << "Please input the sequence: ";
+  cin >> num;
+  for (int i=N-1; i>=1; i--) {
+    a[i] = num % 10; // rand() % 2 ? 0 : 1;
+    num = num / 10;
   }
 
   clock_t begin = clock();
