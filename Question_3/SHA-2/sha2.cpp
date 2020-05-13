@@ -5,6 +5,7 @@ string plaintext;
 string padded;
 
 void padding() {
+  padded = plaintext;
   padded += (char)(0x80);
   int size = padded.size() << 3;
   for (; size % 512 != 448; size += 8) {
@@ -75,14 +76,13 @@ string sha256() {
 
 int main() {
   string srcPath = "../../Data/plaintext.txt";
-  string text = "";
 
   ifstream textFile(srcPath);
   if (!textFile.is_open()) {
     cout << "can't open src file" << endl;
     return 0;
   }
-  getline(textFile, text);
+  getline(textFile, plaintext);
 
   clock_t begin = clock();
   padding();
