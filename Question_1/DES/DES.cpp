@@ -113,7 +113,7 @@ void decrypt() {
 }
 
 bool judge(char text1[], char text2[], int size) {
-	for (int i = size; i >=0; i --) {
+	for (int i = size-1; i >=0; i --) {
 		if (text1[i] != text2[i]) {
 			cout << i << endl;
 			return false;

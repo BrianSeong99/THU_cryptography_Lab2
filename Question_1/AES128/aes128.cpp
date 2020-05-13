@@ -347,7 +347,7 @@ void decrypt() {
 }
 
 bool judge(unsigned char text1[], unsigned char text2[], int size) {
-	for (int i = size; i >= 0; i --) {
+	for (int i = size-1; i >= 0; i --) {
 		if (text1[i] != text2[i]) {
 			cout << "error at: " << i << endl;
 			return false;
