@@ -365,8 +365,8 @@ int main() {
   memset(plaintext, 0, 4096);
   memset(ciphertext, 0, 4096);
 
-  string srcPath = "../Data/plaintext.txt";
-	string dstPath = "../Data/ciphertext.txt";
+  string srcPath = "../../Data/plaintext.txt";
+	string dstPath = "../../Data/ciphertext.txt";
 	string text = "";
 
   // Read Plaintext Content && set inBuff

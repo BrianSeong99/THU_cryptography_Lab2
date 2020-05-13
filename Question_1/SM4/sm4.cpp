@@ -134,8 +134,8 @@ bool judge(unsigned int text1[], unsigned int text2[], int size) {
 }
 
 int main() {
-  string srcPath = "../Data/plaintext.txt";
-  string dstPath = "../Data/ciphertext.txt";
+  string srcPath = "../../Data/plaintext.txt";
+  string dstPath = "../../Data/ciphertext.txt";
   string text = "";
   ifstream textFile(srcPath);
   if (!textFile.is_open()) {

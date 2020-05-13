@@ -125,8 +125,8 @@ bool judge(char text1[], char text2[], int size) {
 int main() {
 	setDESKeys(inputKey);
 
-	string srcPath = "../Data/plaintext.txt";
-	string dstPath = "../Data/ciphertext.txt";
+	string srcPath = "../../Data/plaintext.txt";
+	string dstPath = "../../Data/ciphertext.txt";
 	string text = "";
 
   // Read Plaintext Content && set inBuff
