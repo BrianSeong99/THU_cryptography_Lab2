@@ -390,15 +390,15 @@ int main() {
 	strcpy((char*)tmp, text.c_str());
 	if(judge(tmp, plaintext, 2048)) {
 		double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
-  	cout << "ENCRYPT duration: " << duration << endl;
-  	cout << "ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+  	cout << "AES ENCRYPT duration: " << duration << endl;
+  	cout << "AES ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
 
 		duration = double(decryptEnd - decryptBegin) / CLOCKS_PER_SEC;
-		cout << "DECRYPT duration: " << duration << endl;
-  	cout << "DECRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+		cout << "AES DECRYPT duration: " << duration << endl;
+  	cout << "AES DECRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
 
 	} else {
-		cout << "encryption and decryption error" << endl;
+		cout << "AES encryption and decryption error" << endl;
 	}
   
   return 0;                           

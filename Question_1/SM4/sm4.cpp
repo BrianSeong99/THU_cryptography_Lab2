@@ -1,26 +1,27 @@
 #include "sm4.h"
 
-unsigned int iv[4] = {0, 1, 2, 3};
-unsigned int MK[4];
+unsigned int iv[4] = {rand(), rand(), rand(), rand()};
+unsigned int MK[4] = {rand(), rand(), rand(), rand()};
 unsigned int plaintext[512];
 unsigned int ciphertext[512];
 unsigned int rk[32] = {};
 
-unsigned int tau(unsigned int in) {
+unsigned int substitude(unsigned int in) {
     unsigned int out = 0;
-    for(int i = 0; i < 4; i++) {
+    int i = 0;
+    for(; i < 4; i++) {
         out = (out << 8) + (SBox[(unsigned char)(in >> (24 - 8 * i))]);
     }
     return out;
 }
 
-void keyExpansion(bool selection) {
+void keyExpansion(bool selection) { // true for encrypt, false for decrypt
   unsigned int K[4];
   for(int i = 0; i < 4; i++) {
     K[i] = MK[i] ^ FK[i];
   }
   for(int i = 0; i < 32; i++) {
-    unsigned int t = tau(K[1] ^ K[2] ^ K[3] ^ CK[i]);
+    unsigned int t = substitude(K[1] ^ K[2] ^ K[3] ^ CK[i]);
     unsigned int l = t ^ ((t << 13) | (t >> 19)) ^ ((t << 23) | (t >> 9));
     rk[i] = K[0] ^ l;
     for(int j = 0; j < 3; j++) {
@@ -43,7 +44,7 @@ void SM4(unsigned int* in, unsigned int* out) {
     X[i] = in[i];
   }
   for(int i = 0; i < 32; i++) {
-    unsigned int t = tau(X[1] ^ X[2] ^ X[3] ^ rk[i]);
+    unsigned int t = substitude(X[1] ^ X[2] ^ X[3] ^ rk[i]);
     unsigned int l = t ^ ((t << 2) | (t >> 30)) ^ ((t << 10) | (t >> 22)) ^ ((t << 18) | (t >> 14)) ^ ((t << 24) | (t >> 8));
     l = X[0] ^ l;
     for(int j = 0; j < 3; j++) {
@@ -56,28 +57,40 @@ void SM4(unsigned int* in, unsigned int* out) {
   }
 }
 
+void SM4_core(unsigned int* X) {
+  for(int i = 0; i < 32; i++) {
+    unsigned int t = substitude(X[1] ^ X[2] ^ X[3] ^ rk[i]);
+    unsigned int l = t ^ ((t << 2) | (t >> 30)) ^ ((t << 10) | (t >> 22)) ^ ((t << 18) | (t >> 14)) ^ ((t << 24) | (t >> 8));
+    l = X[0] ^ l;
+    for(int j = 0; j < 3; j++) {
+      X[j] = X[j + 1];
+    }
+    X[3] = l;
+  }
+}
+
 void encrypt() {
   int textLength = 512;
   int n = textLength / 4;
-  unsigned int input[4];
-  unsigned int output[4] = {0, 0, 0, 0};
+  unsigned int X[4];
+  unsigned int cbc_saved[4] = {0, 0, 0, 0};
   keyExpansion(true);
   for(int l = 0; l < n; l ++) {
     for (int i = 0; i < 4; i ++) {
-      input[i] = plaintext[l*4+i];
+      X[i] = plaintext[l*4+i];
     }
     if (l == 0) {
       for (int i = 0; i < 4; i ++) {
-        input[i] = input[i] ^ iv[i];
+        X[i] = X[i] ^ iv[i];
       }
     } else {
       for (int i = 0; i < 4; i ++) {
-        input[i] = input[i] ^ output[i];
+        X[i] = X[i] ^ cbc_saved[i];
       }
     }
-    SM4(input, output);
+    SM4_core(X);
     for(int i = 0; i < 4; i++) {
-      ciphertext[l*4+i] = output[i];
+      ciphertext[l*4+i] = cbc_saved[i] = X[3 - i];
     }
   }
 }
@@ -85,26 +98,27 @@ void encrypt() {
 void decrypt() {
   int textLength = 512;
   int n = textLength / 4;
-  unsigned int input[4];
-  unsigned int output[4] = {0, 0, 0, 0};
+  unsigned int X[4];
+  unsigned int cbc_saved[4] = {0, 0, 0, 0};
   keyExpansion(false);
   for (int i = 0; i < 4; i ++) {
-    input[i] = ciphertext[i+4*(n-1)];
+    X[i] = ciphertext[i+4*(n-1)];
   }
   for(int l = n-1; l >= 0; l --) {
-    SM4(input, output);
+    SM4_core(X);
+    for(int i = 0; i < 4; i++) {
+      cbc_saved[i] = X[3 - i];
+    }
+    
     if (l == 0) {
       for (int i = 0; i < 4; i ++) {
-        output[i] = output[i] ^ iv[i];
+        plaintext[l*4+i] = cbc_saved[i] = cbc_saved[i] ^ iv[i];
       }
     } else {
       for (int i = 0; i < 4; i ++) {
-        input[i] = ciphertext[(l-1)*4+i];
-        output[i] = input[i] ^ output[i];
+        X[i] = ciphertext[(l-1)*4+i];
+        plaintext[l*4+i] = cbc_saved[i] = X[i] ^ cbc_saved[i];
       }
-    }
-    for(int i = 0; i < 4; i++) {
-      plaintext[l*4+i] = output[i];
     }
   }
 }
@@ -127,9 +141,6 @@ int main() {
   if (!textFile.is_open()) {
     cout << "can't open src file" << endl;
     return 0;
-  }
-  for(int i = 0; i < 4; i++) {
-    MK[i] = rand();
   }
   getline(textFile, text);
   unsigned char tmp1[2048];
@@ -155,14 +166,14 @@ int main() {
 
   if(judge(tmp, plaintext, 512)) {
 	double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
-    cout << "ENCRYPT duration: " << duration << endl;
-    cout << "ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+    cout << "SM4 ENCRYPT duration: " << duration << endl;
+    cout << "SM4 ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
     
     duration = double(decryptEnd - decryptBegin) / CLOCKS_PER_SEC;
-    cout << "DECRYPT duration: " << duration << endl;
-    cout << "DECRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+    cout << "SM4 DECRYPT duration: " << duration << endl;
+    cout << "SM4 DECRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
   } else {
-    cout << "encryption and decryption error" << endl;
+    cout << "SM4 encryption and decryption error" << endl;
   }
 
   return 0;
