@@ -34,7 +34,7 @@ void generateKeystream(unsigned char *key, unsigned char *keystream, int keystre
 }
 
 void output(unsigned char *keystream, int keystreamSize){
-    cout << "keystream is: " << endl;
+    cout << "RC4 keystream is: " << endl;
     for (int i = 0; i < int(keystreamSize/4); i ++) {
         cout << (unsigned int)keystream[i];
     }
@@ -45,6 +45,19 @@ int main() {
     char plaintext[] = "testing";
     unsigned char key[] = "thiskeyisjustsetfortestingandprobablyjustuseitbydefault";
     unsigned char keystream[2048];
+    
+    cout << "RC4 plaintext: ";
+    for (int i = 0; i < 7; i ++) {
+        cout << plaintext[i];
+    }
+    cout << endl;
+
+    cout << "RC4 key: ";
+    for (int i = 0; i < int(sizeof(key)/sizeof(*key)); i ++) {
+        cout << key[i];
+    }
+    cout << endl;
+
     clock_t begin = clock();
     init(plaintext, key, int(sizeof(key)/sizeof(*key)));
     generateKeystream(key, keystream, 2048);
@@ -53,6 +66,6 @@ int main() {
     output(keystream, 2048);
 
     double duration = double(end - begin) / CLOCKS_PER_SEC;
-    cout << "duration: " << duration << endl;
-    cout << "bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+    cout << "RC4 duration: " << duration << endl;
+    cout << "RC4 bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
 }

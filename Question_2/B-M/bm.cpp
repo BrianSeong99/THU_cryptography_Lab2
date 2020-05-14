@@ -5,18 +5,16 @@ using namespace std;
 
 int main() {
   unsigned int *a;
-  unsigned long long N;
+  unsigned long long N = 10;
 
-  cout << "Please input the sequence length: ";
-  cin >> N;
   srand(1);
+  cout << "B-M Sequence is: ";
   a = new unsigned int[N];
-  // long long num = 0;
-  // cout << "Please input the sequence: ";
-  // cin >> num;
   for (int i=0; i<N; i++) {
     a[i] = rand() % 2 ? 0 : 1;
+    cout << a[i];
   }
+  cout << endl;
 
   clock_t begin = clock();
   unsigned int **f = new unsigned int*[N+1];
@@ -60,7 +58,7 @@ int main() {
   }
   clock_t end = clock();
 
-  cout << "f_" << N << "(x) = ";
+  cout << "B-M f_" << N << "(x) = ";
   if (f[N][0] > 0) {
     printf("1");
   }
@@ -69,10 +67,10 @@ int main() {
       cout << " + x^" << nn;
     }
   }
-  cout << endl << "l[" << N << "] = " << l[N] << endl;
+  cout << endl << "B-M l[" << N << "] = " << l[N] << endl;
 
   double duration = double(end - begin) / CLOCKS_PER_SEC;
-  cout << "duration: " << duration << endl;
-  cout << "bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
+  cout << "B-M duration: " << duration << endl;
+  cout << "B-M bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
   return 0;
 }

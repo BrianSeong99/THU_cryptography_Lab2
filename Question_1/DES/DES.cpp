@@ -149,6 +149,18 @@ int main() {
 	char tmp[4096];
 	strcpy(tmp, text.c_str());
 	if(judge(tmp, plaintext, 2048)) {
+		cout << "DES Key: ";
+		for (int i = 0; i < 8; i ++) {
+			cout << inputKey[i];
+		}
+		cout << endl;
+
+		cout << "DES IV: ";
+		for (int i = 0; i < 8; i ++) {
+			cout << iv[i];
+		}
+		cout << endl;
+
 		double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
   	cout << "DES ENCRYPT duration: " << duration << endl;
   	cout << "DES ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;

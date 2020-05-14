@@ -389,6 +389,18 @@ int main() {
 	unsigned char tmp[4096];
 	strcpy((char*)tmp, text.c_str());
 	if(judge(tmp, plaintext, 2048)) {
+    cout << "AES Key: ";
+		for (int i = 0; i < 16; i ++) {
+			cout << inputKey[i];
+		}
+		cout << endl;
+
+		cout << "AES IV: ";
+		for (int i = 0; i < 16; i ++) {
+			cout << iv[i];
+		}
+		cout << endl;
+
 		double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
   	cout << "AES ENCRYPT duration: " << duration << endl;
   	cout << "AES ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;

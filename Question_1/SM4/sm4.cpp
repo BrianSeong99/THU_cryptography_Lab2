@@ -165,7 +165,19 @@ int main() {
   clock_t decryptEnd = clock();
 
   if(judge(tmp, plaintext, 512)) {
-	double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
+    cout << "SM4 Key: ";
+		for (int i = 0; i < 4; i ++) {
+			cout << MK[i];
+		}
+		cout << endl;
+
+		cout << "SM4 IV: ";
+		for (int i = 0; i < 4; i ++) {
+			cout << iv[i];
+		}
+		cout << endl;
+
+	  double duration = double(encryptEnd - encryptBegin) / CLOCKS_PER_SEC;
     cout << "SM4 ENCRYPT duration: " << duration << endl;
     cout << "SM4 ENCRYPT bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
     
