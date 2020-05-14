@@ -95,5 +95,5 @@ int main() {
   cout << "SM3 Digest: " << digest << endl;
   cout << "SM3 duration: " << duration << endl;
   cout << "SM3 bandwidth: " << 1.0 / 64.0 / duration << "Mbps" << endl;
-    return 0;
+  return 0;
 }
