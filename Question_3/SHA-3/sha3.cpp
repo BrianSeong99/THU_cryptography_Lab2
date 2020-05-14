@@ -1,4 +1,5 @@
 #include "sha3.h"
+#define CONDITION (x+5*y)
 
 unsigned char *plaintext = new unsigned char[2048 + 512];
 unsigned char *cyphertext = new unsigned char[(256>>3) + 1];
@@ -27,7 +28,7 @@ void padding() {
   }
 }
 
-void KECCAK_f(unsigned long long S[5][5]) {
+void KECCAK_F(unsigned long long S[5][5]) {
   for (int i = 0; i < 24; i ++ ) {
     unsigned long long C[5], D[5];
     for (int j = 0; j < 5; j ++) {
@@ -61,22 +62,20 @@ void KECCAK_f(unsigned long long S[5][5]) {
 string sha3() {
   unsigned long long S[5][5] = {0};
   for (int i = 0; i < paddedLen/1088; i ++){
-    unsigned char* block;
+    unsigned char* chunk;
     for (int y = 0; y < 5; y++) {
       for (int x = 0; x < 5; x ++) {
-        int cond = x+5*y;
-        if (cond < 17){
-          block = &plaintext[i * (1088>>3) + cond * 8];
-          S[x][y] ^= *((unsigned long long*)block);
+        if (CONDITION < 17){
+          chunk = &plaintext[i * (1088>>3) + CONDITION * 8];
+          S[x][y] ^= *((unsigned long long*)chunk);
         }
       }
     }
-    KECCAK_f(S);
+    KECCAK_F(S);
   }
   for (int index = 0, y = 0, k = 0; y < 5; y ++) {
     for (int x = 0; x < 5; x ++) {
-      int cond = x+5*y;
-      if (cond < 17 && k < 4) {
+      if (CONDITION < 17 && k < 4) {
         ((unsigned long long*)cyphertext)[index++] = S[x][y];
         k++;
       }
@@ -95,7 +94,6 @@ string sha3() {
 }
 
 int main() {
-  cyphertext[256>>3] = '\0';
   string srcPath = "../../Data/plaintext.txt";
   string text = "";
 
